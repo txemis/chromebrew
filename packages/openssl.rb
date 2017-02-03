@@ -1,13 +1,25 @@
 require 'package'
 
 class Openssl < Package
-  version '1.0.1e'
-  binary_url ({
-    i686: 'https://dl.dropboxusercontent.com/s/w6y84tusor5xz5f/openssl-1.0.1e-chromeos-i686.tar.gz?token_hash=AAGQ2xjngbnzme2CKee7Mz5WvkylBtFy1rwUzWDVNuOQ_Q&dl=1',
-    x86_64: 'https://dl.dropboxusercontent.com/s/384awniosicvm12/openssl-1.0.1e-chromeos-x86_64.tar.gz?token_hash=AAH4sdqkNnhIFU-uPdrpqddsi8UU0vWe_gwkplUBM_40MQ&dl=1'
-  })
-  binary_sha1 ({
-    i686: 'cadea32ec770c4b44d565b7e5fdf96a469a05757',
-    x86_64: '3cf4defb11fc2fccce77736d0f4559e56d9d7e05'
-  })
+  version '1.0.2k'
+
+  source_url 'ftp://openssl.org/source/openssl-1.0.2k.tar.gz'
+  source_sha1 '5f26a624479c51847ebd2f22bb9f84b3b44dcb44'
+
+  depends_on 'perl'
+  depends_on 'zlibpkg'
+
+  def self.build
+    system "./config", "--prefix=/usr/local", "--openssldir=/etc/ssl", "shared", "zlib-dynamic"
+    system "make"
+  end
+
+  def self.install
+    # installing using multi cores may cause empty libssl.so.1.0.0 or libcrypto.so.1.0.0 problem
+    system "make", "-j1", "INSTALL_PREFIX=#{CREW_DEST_DIR}", "install"
+
+    # remove all files pretended to install /etc/ssl (use system's /etc/ssl as is)
+    system "rm", "-rf", "#{CREW_DEST_DIR}/etc"
+  end
+
 end
